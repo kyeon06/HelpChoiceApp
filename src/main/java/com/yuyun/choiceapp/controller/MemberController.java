@@ -1,5 +1,6 @@
 package com.yuyun.choiceapp.controller;
 
+import com.yuyun.choiceapp.dto.LoginRequest;
 import com.yuyun.choiceapp.dto.SignupRequest;
 import com.yuyun.choiceapp.dto.SignupResponse;
 import com.yuyun.choiceapp.dto.TokenDto;
@@ -20,5 +21,10 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest request) {
         return ResponseEntity.ok(memberService.signup(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenDto> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(memberService.login(request));
     }
 }

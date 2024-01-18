@@ -1,11 +1,19 @@
 package com.yuyun.choiceapp.service;
 
+import com.yuyun.choiceapp.dto.LoginRequest;
 import com.yuyun.choiceapp.dto.SignupRequest;
 import com.yuyun.choiceapp.dto.SignupResponse;
+import com.yuyun.choiceapp.dto.TokenDto;
 import com.yuyun.choiceapp.entity.Member;
+import com.yuyun.choiceapp.entity.RefreshToken;
+import com.yuyun.choiceapp.jwt.TokenProvider;
 import com.yuyun.choiceapp.repository.MemberRepository;
+import com.yuyun.choiceapp.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +22,10 @@ import org.springframework.stereotype.Service;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
@@ -35,5 +47,23 @@ public class MemberService {
 
         Member member = request.toMember(passwordEncoder);
         return SignupResponse.of(memberRepository.save(member));
+    }
+
+    @Transactional
+    public TokenDto login(LoginRequest request) {
+        UsernamePasswordAuthenticationToken authenticationToken = request.toAuthentication();
+
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .key(authentication.getName())
+                .value(tokenDto.getRefreshToken())
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        return tokenDto;
     }
 }
