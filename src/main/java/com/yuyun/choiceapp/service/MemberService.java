@@ -1,9 +1,6 @@
 package com.yuyun.choiceapp.service;
 
-import com.yuyun.choiceapp.dto.LoginRequest;
-import com.yuyun.choiceapp.dto.SignupRequest;
-import com.yuyun.choiceapp.dto.SignupResponse;
-import com.yuyun.choiceapp.dto.TokenDto;
+import com.yuyun.choiceapp.dto.*;
 import com.yuyun.choiceapp.entity.Member;
 import com.yuyun.choiceapp.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
@@ -11,12 +8,14 @@ import com.yuyun.choiceapp.repository.MemberRepository;
 import com.yuyun.choiceapp.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -63,6 +62,29 @@ public class MemberService {
                 .build();
 
         refreshTokenRepository.save(refreshToken);
+
+        return tokenDto;
+    }
+
+    @Transactional
+    public TokenDto tokenRefresh(TokenRefreshRequest tokenRefreshRequest) {
+        if (!tokenProvider.validateToken(tokenRefreshRequest.getRefreshToken())) {
+            throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
+        }
+
+        Authentication authentication = tokenProvider.getAuthentication(tokenRefreshRequest.getAccessToken());
+
+        RefreshToken refreshToken = refreshTokenRepository.findByKey(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+
+        if (!refreshToken.getValue().equals(tokenRefreshRequest.getRefreshToken())) {
+            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+        }
+
+        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+
+        RefreshToken newRefreshToken = refreshToken.updateValue(tokenDto.getRefreshToken());
+        refreshTokenRepository.save(newRefreshToken);
 
         return tokenDto;
     }
