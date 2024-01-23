@@ -1,6 +1,6 @@
-package com.yuyun.choiceapp.repository;
+package com.yuyun.choiceapp.member.repository;
 
-import com.yuyun.choiceapp.entity.RefreshToken;
+import com.yuyun.choiceapp.member.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,7 +1,7 @@
-package com.yuyun.choiceapp.service;
+package com.yuyun.choiceapp.member.service;
 
-import com.yuyun.choiceapp.entity.Member;
-import com.yuyun.choiceapp.repository.MemberRepository;
+import com.yuyun.choiceapp.member.entity.Member;
+import com.yuyun.choiceapp.member.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

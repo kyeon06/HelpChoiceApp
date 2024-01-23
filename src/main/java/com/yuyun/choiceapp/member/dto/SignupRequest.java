@@ -1,7 +1,8 @@
-package com.yuyun.choiceapp.dto;
+package com.yuyun.choiceapp.member.dto;
 
-import com.yuyun.choiceapp.entity.Authority;
-import com.yuyun.choiceapp.entity.Member;
+import com.yuyun.choiceapp.member.entity.Authority;
+import com.yuyun.choiceapp.member.entity.Member;
+import com.yuyun.choiceapp.member.entity.MemberStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class SignupRequest {
                 .username(username)
                 .nickname(nickname)
                 .authority(Authority.ROLE_USER)
+                .status(MemberStatus.PENDING)
                 .build();
     }
 }

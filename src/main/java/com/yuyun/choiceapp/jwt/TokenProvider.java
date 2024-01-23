@@ -1,6 +1,6 @@
 package com.yuyun.choiceapp.jwt;
 
-import com.yuyun.choiceapp.dto.TokenDto;
+import com.yuyun.choiceapp.member.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

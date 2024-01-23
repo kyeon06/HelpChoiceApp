@@ -5,7 +5,6 @@ import com.yuyun.choiceapp.jwt.JwtAuthenticationEntryPoint;
 import com.yuyun.choiceapp.jwt.JwtSecurityConfig;
 import com.yuyun.choiceapp.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,17 +50,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         // 인증 없이 접근을 허용하겠다는 의미
                         .requestMatchers("/api/authenticate", "/api/signup", "/api/login").permitAll()
-                        .requestMatchers(PathRequest.toH2Console()).permitAll()
                         // 나머지 요청에 대해서는 인증을 해야한다라는 의미
                         .anyRequest().authenticated())
 
                 // 세션을 사용하지 않기 때문에 STATELESS로 설정
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                // enable h2-console
-                .headers(headers ->
-                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
 
                 .with(new JwtSecurityConfig(tokenProvider), customizer -> {});

@@ -1,7 +1,7 @@
-package com.yuyun.choiceapp.controller;
+package com.yuyun.choiceapp.member.controller;
 
-import com.yuyun.choiceapp.dto.*;
-import com.yuyun.choiceapp.service.MemberService;
+import com.yuyun.choiceapp.member.dto.*;
+import com.yuyun.choiceapp.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

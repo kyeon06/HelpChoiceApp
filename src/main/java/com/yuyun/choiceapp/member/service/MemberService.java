@@ -1,11 +1,11 @@
-package com.yuyun.choiceapp.service;
+package com.yuyun.choiceapp.member.service;
 
-import com.yuyun.choiceapp.dto.*;
-import com.yuyun.choiceapp.entity.Member;
-import com.yuyun.choiceapp.entity.RefreshToken;
+import com.yuyun.choiceapp.member.dto.*;
+import com.yuyun.choiceapp.member.entity.Member;
+import com.yuyun.choiceapp.member.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
-import com.yuyun.choiceapp.repository.MemberRepository;
-import com.yuyun.choiceapp.repository.RefreshTokenRepository;
+import com.yuyun.choiceapp.member.repository.MemberRepository;
+import com.yuyun.choiceapp.member.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

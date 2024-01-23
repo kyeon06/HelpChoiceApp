@@ -1,6 +1,6 @@
-package com.yuyun.choiceapp.dto;
+package com.yuyun.choiceapp.member.dto;
 
-import com.yuyun.choiceapp.entity.Member;
+import com.yuyun.choiceapp.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.yuyun.choiceapp.dto;
+package com.yuyun.choiceapp.member.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

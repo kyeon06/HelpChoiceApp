@@ -1,4 +1,4 @@
-package com.yuyun.choiceapp.entity;
+package com.yuyun.choiceapp.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -20,15 +20,23 @@ public class Member {
     private String email;
     private String password;
 
+    private String authCode;
+
+    @Enumerated(EnumType.STRING)
+    private MemberStatus status;
+
     @Enumerated(EnumType.STRING)
     private Authority authority;
 
     @Builder
-    public Member(String username, String nickname, String email, String password, Authority authority) {
+    public Member(String username, String nickname, String email, String password, Authority authority,
+                  String authCode, MemberStatus status) {
         this.username = username;
         this.nickname = nickname;
         this.email = email;
         this.password = password;
         this.authority = authority;
+        this.authCode = authCode;
+        this.status = status;
     }
 }

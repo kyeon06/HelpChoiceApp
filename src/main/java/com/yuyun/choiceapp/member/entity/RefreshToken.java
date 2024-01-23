@@ -1,4 +1,4 @@
-package com.yuyun.choiceapp.entity;
+package com.yuyun.choiceapp.member.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

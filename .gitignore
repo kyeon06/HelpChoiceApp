@@ -38,3 +38,5 @@ out/
 
 ## yml
 jwt.yml
+mail.yml
+application-local.yml
