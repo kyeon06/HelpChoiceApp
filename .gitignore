@@ -40,3 +40,5 @@ out/
 jwt.yml
 mail.yml
 application-local.yml
+application-gcp.yml
+application-gcp-local.yml
