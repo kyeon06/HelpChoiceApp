@@ -1,6 +1,6 @@
-package com.yuyun.choiceapp.repository;
+package com.yuyun.choiceapp.member.repository;
 
-import com.yuyun.choiceapp.entity.Member;
+import com.yuyun.choiceapp.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
