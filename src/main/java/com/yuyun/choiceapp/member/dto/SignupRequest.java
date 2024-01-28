@@ -19,7 +19,7 @@ public class SignupRequest {
     private String username;
     private String nickname;
 
-    public Member toMember(PasswordEncoder passwordEncoder) {
+    public Member toMember(PasswordEncoder passwordEncoder, String authCode) {
         return Member.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password1))
@@ -27,6 +27,7 @@ public class SignupRequest {
                 .nickname(nickname)
                 .authority(Authority.ROLE_USER)
                 .status(MemberStatus.PENDING)
+                .authCode(authCode)
                 .build();
     }
 }

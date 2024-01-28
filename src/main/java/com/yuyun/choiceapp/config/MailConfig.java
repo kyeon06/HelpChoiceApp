@@ -11,10 +11,10 @@ import java.util.Properties;
 @Configuration
 public class MailConfig {
 
-    @Value("${spring.mail.username}")
-    String id;
-    @Value("${spring.mail.password}")
-    String password;
+    @Value("${mail.username}")
+    private String id;
+    @Value("${mail.password}")
+    private String password;
 
     @Bean
     public JavaMailSender javaMailService() {
@@ -37,8 +37,6 @@ public class MailConfig {
         properties.setProperty("mail.smtp.auth", "true");
         properties.setProperty("mail.smtp.starttls.enable", "true");
         properties.setProperty("mail.debug", "true");
-        properties.setProperty("mail.smtp.ssl.trust","smtp.gmail.com");
-        properties.setProperty("mail.smtp.ssl.enable","true");
         return properties;
     }
 }

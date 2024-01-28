@@ -6,6 +6,8 @@ import com.yuyun.choiceapp.member.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
 import com.yuyun.choiceapp.member.repository.MemberRepository;
 import com.yuyun.choiceapp.member.repository.RefreshTokenRepository;
+import com.yuyun.choiceapp.util.RandomCodeCreator;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,19 +17,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // 회원가입
     @Transactional
-    public SignupResponse signup(SignupRequest request) {
+    public SignupResponse signup(SignupRequest request) throws MessagingException, UnsupportedEncodingException {
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("이미 가입되어 있는 유저입니다");
         }
@@ -44,10 +50,19 @@ public class MemberService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        Member member = request.toMember(passwordEncoder);
-        return SignupResponse.of(memberRepository.save(member));
+        RandomCodeCreator randomCodeCreator = new RandomCodeCreator();
+        String authCode = randomCodeCreator.getRandomCode(10);
+
+        Member member = request.toMember(passwordEncoder, authCode);
+        Member savedMember = memberRepository.save(member);
+
+        mailService.send(savedMember.getEmail(), savedMember.getId(), savedMember.getAuthCode());
+
+        return SignupResponse.of(savedMember);
     }
 
+
+    // 로그인
     @Transactional
     public TokenDto login(LoginRequest request) {
         UsernamePasswordAuthenticationToken authenticationToken = request.toAuthentication();
@@ -66,6 +81,8 @@ public class MemberService {
         return tokenDto;
     }
 
+
+    // 토큰 재발급
     @Transactional
     public TokenDto tokenRefresh(TokenRefreshRequest tokenRefreshRequest) {
         if (!tokenProvider.validateToken(tokenRefreshRequest.getRefreshToken())) {
