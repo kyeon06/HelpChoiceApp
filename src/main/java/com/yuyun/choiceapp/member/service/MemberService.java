@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -61,6 +62,15 @@ public class MemberService {
         return SignupResponse.of(savedMember);
     }
 
+    // 이메일 인증
+    @Transactional
+    public void verifyEmail(long memberId, String authCode) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+
+        member = member.verify(authCode);
+        memberRepository.save(member);
+    }
 
     // 로그인
     @Transactional
@@ -80,7 +90,6 @@ public class MemberService {
 
         return tokenDto;
     }
-
 
     // 토큰 재발급
     @Transactional

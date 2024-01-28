@@ -49,7 +49,7 @@ public class WebSecurityConfig {
                 // authorizeHttpRequest : HttpServletRequest를 사용하는 요청들에 대한 접근 제한을 설정
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         // 인증 없이 접근을 허용하겠다는 의미
-                        .requestMatchers("/api/authenticate", "/api/signup", "/api/login").permitAll()
+                        .requestMatchers("/api/authenticate", "/api/signup", "/api/login", "/api/members/**").permitAll()
                         // 나머지 요청에 대해서는 인증을 해야한다라는 의미
                         .anyRequest().authenticated())
 

@@ -29,8 +29,9 @@ public class Member {
     private Authority authority;
 
     @Builder
-    public Member(String username, String nickname, String email, String password, Authority authority,
+    public Member(Long id, String username, String nickname, String email, String password, Authority authority,
                   String authCode, MemberStatus status) {
+        this.id = id;
         this.username = username;
         this.nickname = nickname;
         this.email = email;
@@ -38,5 +39,22 @@ public class Member {
         this.authority = authority;
         this.authCode = authCode;
         this.status = status;
+    }
+
+    public Member verify(String authCode) {
+        if (!this.authCode.equals(authCode)) {
+            throw new IllegalArgumentException("인증코드가 일치하지 않습니다.");
+        }
+
+        return Member.builder()
+                .id(id)
+                .email(email)
+                .username(username)
+                .password(password)
+                .nickname(nickname)
+                .authority(Authority.ROLE_USER)
+                .authCode(authCode)
+                .status(MemberStatus.ACTIVE)
+                .build();
     }
 }
