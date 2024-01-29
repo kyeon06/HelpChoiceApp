@@ -5,6 +5,8 @@ import com.yuyun.choiceapp.member.entity.Member;
 import com.yuyun.choiceapp.member.entity.MemberStatus;
 import com.yuyun.choiceapp.member.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
+import com.yuyun.choiceapp.member.exception.MemberException;
+import com.yuyun.choiceapp.member.exception.status.ExceptionStatus;
 import com.yuyun.choiceapp.member.repository.MemberRepository;
 import com.yuyun.choiceapp.member.repository.RefreshTokenRepository;
 import com.yuyun.choiceapp.util.RandomCodeCreator;
@@ -37,13 +39,13 @@ public class MemberService {
     @Transactional
     public SignupResponse signup(SignupRequest request) throws MessagingException, UnsupportedEncodingException {
         if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("이미 가입되어 있는 유저입니다");
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_EMAIL);
         }
         if (memberRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("이미 사용중인 ID 입니다");
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_USERNAME);
         }
         if (memberRepository.existsByNickname(request.getNickname())) {
-            throw new RuntimeException("사용할 수 없는 nickname 입니다");
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_NICKNAME);
         }
 
         String encodedPw = passwordService.encode(request.getPassword1(), request.getPassword2());
@@ -63,7 +65,7 @@ public class MemberService {
     @Transactional
     public void verifyEmail(long memberId, String authCode) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new MemberException(ExceptionStatus.NOT_EXIST_MEMBER));
 
         member = member.verify(authCode);
         memberRepository.save(member);
@@ -73,10 +75,10 @@ public class MemberService {
     @Transactional
     public TokenDto login(LoginRequest request) {
         Member member = memberRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new MemberException(ExceptionStatus.NOT_EXIST_MEMBER));
 
         if (!member.getStatus().equals(MemberStatus.ACTIVE)) {
-            throw new RuntimeException("로그인 할 수 없습니다. 먼저 이메일 인증을 완료해주세요.");
+            throw new MemberException(ExceptionStatus.LOGIN_ACCESS_DENIED);
         }
 
         passwordService.matches(request.getPassword(), member.getPassword());
