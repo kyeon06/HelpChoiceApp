@@ -19,10 +19,10 @@ public class SignupRequest {
     private String username;
     private String nickname;
 
-    public Member toMember(PasswordEncoder passwordEncoder, String authCode) {
+    public Member toMember(String encodedPw, String authCode) {
         return Member.builder()
                 .email(email)
-                .password(passwordEncoder.encode(password1))
+                .password(encodedPw)
                 .username(username)
                 .nickname(nickname)
                 .authority(Authority.ROLE_USER)

@@ -2,6 +2,7 @@ package com.yuyun.choiceapp.member.service;
 
 import com.yuyun.choiceapp.member.dto.*;
 import com.yuyun.choiceapp.member.entity.Member;
+import com.yuyun.choiceapp.member.entity.MemberStatus;
 import com.yuyun.choiceapp.member.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
 import com.yuyun.choiceapp.member.repository.MemberRepository;
@@ -25,7 +26,7 @@ import java.io.UnsupportedEncodingException;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
     private final MailService mailService;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -45,16 +46,12 @@ public class MemberService {
             throw new RuntimeException("사용할 수 없는 nickname 입니다");
         }
 
-        String password1 = request.getPassword1();
-        String password2 = request.getPassword2();
-        if (!password1.equals(password2)) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
-        }
+        String encodedPw = passwordService.encode(request.getPassword1(), request.getPassword2());
 
         RandomCodeCreator randomCodeCreator = new RandomCodeCreator();
         String authCode = randomCodeCreator.getRandomCode(10);
 
-        Member member = request.toMember(passwordEncoder, authCode);
+        Member member = request.toMember(encodedPw, authCode);
         Member savedMember = memberRepository.save(member);
 
         mailService.send(savedMember.getEmail(), savedMember.getId(), savedMember.getAuthCode());
@@ -75,6 +72,15 @@ public class MemberService {
     // 로그인
     @Transactional
     public TokenDto login(LoginRequest request) {
+        Member member = memberRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        if (!member.getStatus().equals(MemberStatus.ACTIVE)) {
+            throw new RuntimeException("로그인 할 수 없습니다. 먼저 이메일 인증을 완료해주세요.");
+        }
+
+        passwordService.matches(request.getPassword(), member.getPassword());
+
         UsernamePasswordAuthenticationToken authenticationToken = request.toAuthentication();
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
