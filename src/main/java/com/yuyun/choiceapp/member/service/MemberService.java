@@ -35,19 +35,35 @@ public class MemberService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+
+    // 사용자 이메일, ID, 닉네임 중복확인
+    @Transactional
+    public Boolean checkEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_EMAIL);
+        }
+        return true;
+    }
+
+    @Transactional
+    public Boolean checkUsername(String username) {
+        if (memberRepository.existsByUsername(username)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_USERNAME);
+        }
+        return true;
+    }
+
+    @Transactional
+    public Boolean checkNickname(String nickname) {
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_NICKNAME);
+        }
+        return true;
+    }
+
     // 회원가입
     @Transactional
     public SignupResponse signup(SignupRequest request) throws MessagingException, UnsupportedEncodingException {
-        if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_EMAIL);
-        }
-        if (memberRepository.existsByUsername(request.getUsername())) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_USERNAME);
-        }
-        if (memberRepository.existsByNickname(request.getNickname())) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_NICKNAME);
-        }
-
         String encodedPw = passwordService.encode(request.getPassword1(), request.getPassword2());
 
         RandomCodeCreator randomCodeCreator = new RandomCodeCreator();

@@ -28,6 +28,21 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    @GetMapping("/members/email/{email}/check")
+    public ResponseEntity<Boolean> checkEmail(@PathVariable(name = "email") String email) {
+        return ResponseEntity.ok(memberService.checkEmail(email));
+    }
+
+    @GetMapping("/members/username/{username}/check")
+    public ResponseEntity<Boolean> checkUsername(@PathVariable(name = "username") String username) {
+        return ResponseEntity.ok(memberService.checkUsername(username));
+    }
+
+    @GetMapping("/members/nickname/{nickname}/check")
+    public ResponseEntity<Boolean> checkNickname(@PathVariable(name = "nickname") String nickname) {
+        return ResponseEntity.ok(memberService.checkNickname(nickname));
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest request) throws MessagingException, UnsupportedEncodingException {
         return ResponseEntity.ok(memberService.signup(request));
