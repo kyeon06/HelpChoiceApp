@@ -14,11 +14,9 @@ import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -35,30 +33,20 @@ public class MemberService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-
     // 사용자 이메일, ID, 닉네임 중복확인
     @Transactional
     public Boolean checkEmail(String email) {
-        if (memberRepository.existsByEmail(email)) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_EMAIL);
-        }
-        return true;
+        return memberRepository.existsByEmail(email);
     }
 
     @Transactional
     public Boolean checkUsername(String username) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_USERNAME);
-        }
-        return true;
+        return memberRepository.existsByUsername(username);
     }
 
     @Transactional
     public Boolean checkNickname(String nickname) {
-        if (memberRepository.existsByNickname(nickname)) {
-            throw new MemberException(ExceptionStatus.EXIST_MEMBER_NICKNAME);
-        }
-        return true;
+        return memberRepository.existsByNickname(nickname);
     }
 
     // 회원가입
