@@ -2,8 +2,11 @@ package com.yuyun.choiceapp.member.service;
 
 import com.yuyun.choiceapp.member.dto.*;
 import com.yuyun.choiceapp.member.entity.Member;
+import com.yuyun.choiceapp.member.entity.MemberStatus;
 import com.yuyun.choiceapp.member.entity.RefreshToken;
 import com.yuyun.choiceapp.jwt.TokenProvider;
+import com.yuyun.choiceapp.member.exception.MemberException;
+import com.yuyun.choiceapp.member.exception.status.ExceptionStatus;
 import com.yuyun.choiceapp.member.repository.MemberRepository;
 import com.yuyun.choiceapp.member.repository.RefreshTokenRepository;
 import com.yuyun.choiceapp.util.RandomCodeCreator;
@@ -11,11 +14,9 @@ import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -25,36 +26,38 @@ import java.io.UnsupportedEncodingException;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
     private final MailService mailService;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // 사용자 이메일, ID, 닉네임 중복확인
+    @Transactional
+    public Boolean checkEmail(String email) {
+        return memberRepository.existsByEmail(email);
+    }
+
+    @Transactional
+    public Boolean checkUsername(String username) {
+        return memberRepository.existsByUsername(username);
+    }
+
+    @Transactional
+    public Boolean checkNickname(String nickname) {
+        return memberRepository.existsByNickname(nickname);
+    }
+
     // 회원가입
     @Transactional
     public SignupResponse signup(SignupRequest request) throws MessagingException, UnsupportedEncodingException {
-        if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("이미 가입되어 있는 유저입니다");
-        }
-        if (memberRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("이미 사용중인 ID 입니다");
-        }
-        if (memberRepository.existsByNickname(request.getNickname())) {
-            throw new RuntimeException("사용할 수 없는 nickname 입니다");
-        }
-
-        String password1 = request.getPassword1();
-        String password2 = request.getPassword2();
-        if (!password1.equals(password2)) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
-        }
+        String encodedPw = passwordService.encode(request.getPassword1(), request.getPassword2());
 
         RandomCodeCreator randomCodeCreator = new RandomCodeCreator();
         String authCode = randomCodeCreator.getRandomCode(10);
 
-        Member member = request.toMember(passwordEncoder, authCode);
+        Member member = request.toMember(encodedPw, authCode);
         Member savedMember = memberRepository.save(member);
 
         mailService.send(savedMember.getEmail(), savedMember.getId(), savedMember.getAuthCode());
@@ -66,7 +69,7 @@ public class MemberService {
     @Transactional
     public void verifyEmail(long memberId, String authCode) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new MemberException(ExceptionStatus.NOT_EXIST_MEMBER));
 
         member = member.verify(authCode);
         memberRepository.save(member);
@@ -75,6 +78,15 @@ public class MemberService {
     // 로그인
     @Transactional
     public TokenDto login(LoginRequest request) {
+        Member member = memberRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new MemberException(ExceptionStatus.NOT_EXIST_MEMBER));
+
+        if (!member.getStatus().equals(MemberStatus.ACTIVE)) {
+            throw new MemberException(ExceptionStatus.LOGIN_ACCESS_DENIED);
+        }
+
+        passwordService.matches(request.getPassword(), member.getPassword());
+
         UsernamePasswordAuthenticationToken authenticationToken = request.toAuthentication();
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
