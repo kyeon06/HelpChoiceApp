@@ -158,7 +158,7 @@ public class MemberController {
         memberService.verifyEmail(memberId, authCode);
 
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl(clientUrl + "/signin");
+        redirectView.setUrl(clientUrl + "/signin/verify");
         return redirectView;
     }
 
