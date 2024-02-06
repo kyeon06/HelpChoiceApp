@@ -127,23 +127,13 @@ public class MemberController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "회원가입 성공",
                     content = {@Content(schema = @Schema(implementation = Member.class))}),
-            @ApiResponse(responseCode = "400", description = "비밀번호 불일치",
+            @ApiResponse(responseCode = "400", description = "회원가입 실패",
                     content = {@Content(schema = @Schema(implementation = ExceptionResponse.class))}),
-            @ApiResponse(responseCode = "400", description = "유효성 검사 실패",
-                    content = {@Content(schema = @Schema(implementation = ErrorResponse.class))})
     })
     public ResponseEntity signup(@Valid @RequestBody SignupRequest request, BindingResult bindingResult) throws MessagingException, UnsupportedEncodingException {
 
-        // 에러처리
         if (bindingResult.hasErrors()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            bindingResult.getAllErrors().forEach(objectError -> {
-                FieldError field = (FieldError) objectError;
-                String message = objectError.getDefaultMessage();
-                errorResponse.setFieldName(field.getField());
-                errorResponse.setMessage(message);
-            });
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ExceptionResponse(HttpStatus.BAD_REQUEST, "회원가입 실패, 다시 입력해주세요."));
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(memberService.signup(request));
     }
