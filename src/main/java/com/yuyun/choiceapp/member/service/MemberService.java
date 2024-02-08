@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
 import java.io.UnsupportedEncodingException;
 
@@ -33,25 +34,46 @@ public class MemberService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    // 사용자 이메일, ID, 닉네임 중복확인
     @Transactional
-    public Boolean checkEmail(String email) {
-        return memberRepository.existsByEmail(email);
+    public void checkEmail(String email, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new MemberException(ExceptionStatus.FAIL_VALID_EMAIL);
+        }
+
+        if (memberRepository.existsByEmail(email)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_EMAIL);
+        }
     }
 
     @Transactional
-    public Boolean checkUsername(String username) {
-        return memberRepository.existsByUsername(username);
+    public void checkUsername(String username, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new MemberException(ExceptionStatus.FAIL_VALID_USERNAME);
+        }
+
+        if (memberRepository.existsByUsername(username)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_USERNAME);
+        }
     }
 
     @Transactional
-    public Boolean checkNickname(String nickname) {
-        return memberRepository.existsByNickname(nickname);
+    public void checkNickname(String nickname, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new MemberException(ExceptionStatus.FAIL_VALID_NICKNAME);
+        }
+
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new MemberException(ExceptionStatus.EXIST_MEMBER_NICKNAME);
+        }
     }
 
     // 회원가입
     @Transactional
-    public SignupResponse signup(SignupRequest request) throws MessagingException, UnsupportedEncodingException {
+    public SignupResponse signup(SignupRequest request, BindingResult bindingResult) throws MessagingException, UnsupportedEncodingException {
+        if (bindingResult.hasErrors()) {
+            throw new MemberException(ExceptionStatus.FAIL_SIGNUP);
+        }
+
         String encodedPw = passwordService.encode(request.getPassword1(), request.getPassword2());
 
         RandomCodeCreator randomCodeCreator = new RandomCodeCreator();

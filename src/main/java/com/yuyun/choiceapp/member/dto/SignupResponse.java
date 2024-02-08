@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignupResponse {
     private String username;
+    private String email;
 
     public static SignupResponse of(Member member) {
-        return new SignupResponse(member.getUsername());
+        return new SignupResponse(member.getUsername(), member.getEmail());
     }
 }
