@@ -1,9 +1,7 @@
 package com.yuyun.choiceapp.member.controller;
 
-import com.yuyun.choiceapp.common.exception.response.ExceptionResponse;
+import com.yuyun.choiceapp.common.exception.response.ErrorResponse;
 import com.yuyun.choiceapp.member.dto.*;
-import com.yuyun.choiceapp.member.entity.Member;
-import com.yuyun.choiceapp.member.exception.status.ExceptionStatus;
 import com.yuyun.choiceapp.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -44,25 +41,10 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "유효성 검사 실패",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "중복된 이메일 존재",
-                    content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity checkEmail(@Valid @RequestBody DuplicateRequest duplicateRequest, BindingResult bindingResult) {
-        // 에러처리
-        if (bindingResult.hasErrors()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            bindingResult.getAllErrors().forEach(objectError -> {
-                FieldError field = (FieldError) objectError;
-                String message = objectError.getDefaultMessage();
-                errorResponse.setFieldName(field.getField());
-                errorResponse.setMessage(message);
-            });
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        if (memberService.checkEmail(duplicateRequest.getEmail())) {
-            String mg = ExceptionStatus.EXIST_MEMBER_EMAIL.getMessage();
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(HttpStatus.CONFLICT, mg));
-        }
+        memberService.checkEmail(duplicateRequest.getEmail(), bindingResult);
         return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
@@ -73,24 +55,10 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "유효성 검사 실패",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "중복된 USERNAME 존재",
-                    content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity checkUsername(@Valid @RequestBody DuplicateRequest duplicateRequest, BindingResult bindingResult) {
-        // 에러처리
-        if (bindingResult.hasErrors()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            bindingResult.getAllErrors().forEach(objectError -> {
-                FieldError field = (FieldError) objectError;
-                String message = objectError.getDefaultMessage();
-                errorResponse.setFieldName(field.getField());
-                errorResponse.setMessage(message);
-            });
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-        if (memberService.checkUsername(duplicateRequest.getUsername())) {
-            String mg = ExceptionStatus.EXIST_MEMBER_USERNAME.getMessage();
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(HttpStatus.CONFLICT, mg));
-        }
+        memberService.checkUsername(duplicateRequest.getUsername(), bindingResult);
         return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
@@ -101,24 +69,10 @@ public class MemberController {
             @ApiResponse(responseCode = "400", description = "유효성 검사 실패",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "중복된 NICKNAME 존재",
-                    content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity checkNickname(@Valid @RequestBody DuplicateRequest duplicateRequest, BindingResult bindingResult) {
-        // 에러처리
-        if (bindingResult.hasErrors()) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            bindingResult.getAllErrors().forEach(objectError -> {
-                FieldError field = (FieldError) objectError;
-                String message = objectError.getDefaultMessage();
-                errorResponse.setFieldName(field.getField());
-                errorResponse.setMessage(message);
-            });
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-        if (memberService.checkNickname(duplicateRequest.getNickname())) {
-            String mg = ExceptionStatus.EXIST_MEMBER_NICKNAME.getMessage();
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(HttpStatus.CONFLICT, mg));
-        }
+        memberService.checkNickname(duplicateRequest.getNickname(), bindingResult);
         return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
@@ -126,16 +80,13 @@ public class MemberController {
     @Operation(summary = "회원가입")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "회원가입 성공",
-                    content = {@Content(schema = @Schema(implementation = Member.class))}),
+                    content = {@Content(schema = @Schema(implementation = SignupResponse.class))}),
             @ApiResponse(responseCode = "400", description = "회원가입 실패",
-                    content = {@Content(schema = @Schema(implementation = ExceptionResponse.class))}),
+                    content = {@Content(schema = @Schema(implementation = ErrorResponse.class))}),
     })
-    public ResponseEntity signup(@Valid @RequestBody SignupRequest request, BindingResult bindingResult) throws MessagingException, UnsupportedEncodingException {
-
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ExceptionResponse(HttpStatus.BAD_REQUEST, "회원가입 실패, 다시 입력해주세요."));
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(memberService.signup(request));
+    public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request, BindingResult bindingResult) throws MessagingException, UnsupportedEncodingException {
+        SignupResponse response = memberService.signup(request, bindingResult);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/members/{memberId}/verify")
